@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글자수 세기 — 실시간 글자수 카운터 | 바이트 계산기</title>
+    <meta name="description" content="글자수 세기 무료 온라인 도구. 자기소개서, 블로그, SNS 글자수를 실시간으로 확인하세요. 공백 포함/제외, 바이트 수, 단어 수까지 한번에 계산합니다.">
+    <meta name="keywords" content="글자수 세기, 글자수 카운터, 바이트 계산, 글자수 계산기, 자소서 글자수, 워드카운트">
+    <meta property="og:title" content="글자수 세기 — 실시간 글자수 카운터">
+    <meta property="og:description" content="텍스트를 입력하면 글자수, 바이트, 단어수를 실시간으로 계산합니다.">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F6F5F1;
+            --surface: #FFFFFF;
+            --surface-alt: #EDECE8;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B6B6B;
+            --text-tertiary: #9E9E9E;
+            --accent: #2D5BE3;
+            --accent-light: #EBF0FF;
+            --accent-hover: #1E4AD4;
+            --border: #E2E1DD;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+            --radius: 14px;
+            --radius-sm: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* — Header — */
+        .header {
+            text-align: center;
+            padding: 48px 20px 0;
+            animation: fadeDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .header h1 span {
+            color: var(--accent);
+        }
+
+        .header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        /* — Main Container — */
+        .container {
+            max-width: 760px;
+            margin: 32px auto;
+            padding: 0 20px 60px;
+        }
+
+        /* — Ad Banner Placeholder — */
+        .ad-banner {
+            background: var(--surface-alt);
+            border: 1.5px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 24px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 400;
+            animation: fadeUp 0.6s ease-out 0.1s both;
+        }
+
+        /* — Textarea Card — */
+        .editor-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+            animation: fadeUp 0.6s ease-out 0.2s both;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .editor-card:focus-within {
+            box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-light);
+            border-color: var(--accent);
+        }
+
+        .editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .editor-toolbar-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-tool {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-tool:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-tool:active {
+            transform: scale(0.96);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 260px;
+            padding: 20px;
+            border: none;
+            outline: none;
+            resize: vertical;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-primary);
+            background: var(--surface);
+        }
+
+        textarea::placeholder {
+            color: var(--text-tertiary);
+            font-weight: 300;
+        }
+
+        /* — Stats Grid — */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+            animation: fadeUp 0.6s ease-out 0.35s both;
+        }
+
+        @media (min-width: 520px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 18px 16px;
+            text-align: center;
+            transition: all 0.25s ease;
+            cursor: default;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(26px, 4vw, 34px);
+            font-weight: 600;
+            color: var(--accent);
+            line-height: 1.1;
+            margin-bottom: 6px;
+            transition: color 0.2s;
+        }
+
+        .stat-card:hover .stat-value {
+            color: var(--accent-hover);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+        }
+
+        /* — Detail Stats — */
+        .detail-section {
+            margin-top: 20px;
+            animation: fadeUp 0.6s ease-out 0.45s both;
+        }
+
+        .detail-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .detail-header {
+            padding: 14px 20px;
+            background: var(--surface-alt);
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 20px;
+            border-bottom: 1px solid var(--surface-alt);
+            transition: background 0.15s;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row:hover {
+            background: #FAFAF8;
+        }
+
+        .detail-row-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .detail-row-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* — Limit Checker — */
+        .limit-section {
+            margin-top: 20px;
+            animation: fadeUp 0.6s ease-out 0.5s both;
+        }
+
+        .limit-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+        }
+
+        .limit-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 14px;
+        }
+
+        .limit-input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .limit-input-row label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .limit-input {
+            width: 120px;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--text-primary);
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .limit-input:focus {
+            border-color: var(--accent);
+        }
+
+        .limit-select {
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            cursor: pointer;
+            background: var(--surface);
+        }
+
+        .limit-bar-wrapper {
+            background: var(--surface-alt);
+            border-radius: 8px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .limit-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.4s ease, background 0.3s ease;
+            background: var(--accent);
+            min-width: 0;
+        }
+
+        .limit-bar.warning { background: #E8A317; }
+        .limit-bar.danger { background: #E34040; }
+
+        .limit-text {
+            margin-top: 10px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .limit-text.danger { color: #E34040; font-weight: 600; }
+
+        /* — Info Section (SEO) — */
+        .info-section {
+            margin-top: 32px;
+            animation: fadeUp 0.6s ease-out 0.55s both;
+        }
+
+        .info-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 28px 24px;
+        }
+
+        .info-card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            letter-spacing: -0.5px;
+        }
+
+        .info-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .info-card p:last-child { margin-bottom: 0; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 520px) {
+            .info-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .info-item {
+            padding: 16px;
+            background: var(--surface-alt);
+            border-radius: var(--radius-sm);
+        }
+
+        .info-item strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .info-item span {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* — Footer — */
+        .footer {
+            text-align: center;
+            padding: 32px 20px 24px;
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* — Animations — */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* — Toast — */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text-primary);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* — Responsive — */
+        @media (max-width: 480px) {
+            .header { padding: 32px 16px 0; }
+            .container { padding: 0 12px 48px; margin-top: 24px; }
+            textarea { min-height: 200px; font-size: 15px; padding: 16px; }
+            .stat-card { padding: 14px 10px; }
+            .info-card { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <h1>글자수 <span>세기</span></h1>
+    <p>텍스트를 입력하면 글자수, 바이트, 단어수를 실시간으로 계산합니다</p>
+</header>
+
+<main class="container">
+    <!-- 광고 영역 상단 -->
+    <div class="ad-banner" id="ad-top">
+        광고 영역 (Google AdSense) — 애드센스 승인 후 교체
+    </div>
+
+    <!-- 에디터 -->
+    <div class="editor-card">
+        <div class="editor-toolbar">
+            <span class="editor-toolbar-label">텍스트 입력</span>
+            <div class="toolbar-actions">
+                <button class="btn-tool" onclick="pasteText()" title="붙여넣기">📋 붙여넣기</button>
+                <button class="btn-tool" onclick="copyText()" title="복사">📄 복사</button>
+                <button class="btn-tool" onclick="clearText()" title="초기화">✕ 지우기</button>
+            </div>
+        </div>
+        <textarea id="textInput" placeholder="여기에 텍스트를 입력하거나 붙여넣으세요...&#10;&#10;자기소개서, 블로그 글, SNS 게시물 등&#10;글자수를 실시간으로 확인할 수 있습니다." spellcheck="false"></textarea>
+    </div>
+
+    <!-- 주요 통계 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="charWithSpace">0</div>
+            <div class="stat-label">공백 포함</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="charNoSpace">0</div>
+            <div class="stat-label">공백 제외</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="wordCount">0</div>
+            <div class="stat-label">단어 수</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="byteCount">0</div>
+            <div class="stat-label">바이트 (UTF-8)</div>
+        </div>
+    </div>
+
+    <!-- 상세 통계 -->
+    <div class="detail-section">
+        <div class="detail-card">
+            <div class="detail-header">상세 분석</div>
+            <div class="detail-row">
+                <span class="detail-row-label">줄 수 (행)</span>
+                <span class="detail-row-value" id="lineCount">0</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">문장 수</span>
+                <span class="detail-row-value" id="sentenceCount">0</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">한글 글자 수</span>
+                <span class="detail-row-value" id="koreanCount">0</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">영문 글자 수</span>
+                <span class="detail-row-value" id="englishCount">0</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">숫자 개수</span>
+                <span class="detail-row-value" id="numberCount">0</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">특수문자 개수</span>
+                <span class="detail-row-value" id="specialCount">0</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">EUC-KR 바이트</span>
+                <span class="detail-row-value" id="eucKrByte">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 글자수 제한 체크 -->
+    <div class="limit-section">
+        <div class="limit-card">
+            <div class="limit-card-title">글자수 제한 체크</div>
+            <div class="limit-input-row">
+                <label>제한:</label>
+                <input type="number" class="limit-input" id="limitInput" value="500" min="1">
+                <select class="limit-select" id="limitType">
+                    <option value="withSpace">공백 포함</option>
+                    <option value="noSpace">공백 제외</option>
+                    <option value="byte">바이트 (UTF-8)</option>
+                </select>
+            </div>
+            <div class="limit-bar-wrapper">
+                <div class="limit-bar" id="limitBar" style="width: 0%"></div>
+            </div>
+            <div class="limit-text" id="limitText">0 / 500</div>
+        </div>
+    </div>
+
+    <!-- 광고 영역 중간 -->
+    <div class="ad-banner" id="ad-middle" style="margin-top: 24px;">
+        광고 영역 (Google AdSense) — 애드센스 승인 후 교체
+    </div>
+
+    <!-- SEO 콘텐츠 -->
+    <div class="info-section">
+        <div class="info-card">
+            <h2>글자수 세기, 언제 필요할까요?</h2>
+            <p>자기소개서, 이력서, 대학교 과제, 블로그 포스팅, 인스타그램·트위터 게시물, 네이버 블로그 제목, 공문서 작성 등 다양한 상황에서 글자수 제한이 있습니다. 이 도구를 사용하면 실시간으로 글자수를 확인하며 글을 작성할 수 있습니다.</p>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>📝 자기소개서</strong>
+                    <span>대부분 500자~1,000자 제한. 공백 포함/제외 여부를 꼭 확인하세요.</span>
+                </div>
+                <div class="info-item">
+                    <strong>📱 SNS 게시물</strong>
+                    <span>트위터(X) 280자, 인스타 바이오 150자, 카카오톡 프로필 60자 제한이 있습니다.</span>
+                </div>
+                <div class="info-item">
+                    <strong>📄 공문서·보고서</strong>
+                    <span>행정기관 제출 서류는 바이트 수 기준인 경우가 많습니다.</span>
+                </div>
+                <div class="info-item">
+                    <strong>📰 블로그·기사</strong>
+                    <span>네이버 블로그 제목 100자, 메타 디스크립션 160자 이내가 권장됩니다.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 광고 영역 하단 -->
+    <div class="ad-banner" id="ad-bottom" style="margin-top: 24px;">
+        광고 영역 (Google AdSense) — 애드센스 승인 후 교체
+    </div>
+</main>
+
+<footer class="footer">
+    © 2025 글자수 세기 | 무료 온라인 글자수 카운터 · 바이트 계산기
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const textInput = document.getElementById('textInput');
+    const limitInput = document.getElementById('limitInput');
+    const limitType = document.getElementById('limitType');
+
+    // 실시간 계산
+    textInput.addEventListener('input', calculate);
+    limitInput.addEventListener('input', updateLimit);
+    limitType.addEventListener('change', updateLimit);
+
+    function calculate() {
+        const text = textInput.value;
+
+        // 기본 통계
+        const charWithSpace = text.length;
+        const charNoSpace = text.replace(/\s/g, '').length;
+        const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+        const bytes = new Blob([text]).size;
+
+        // 줄 수
+        const lines = text === '' ? 0 : text.split('\n').length;
+
+        // 문장 수
+        const sentences = text === '' ? 0 : text.split(/[.!?。！？]+/).filter(s => s.trim().length > 0).length;
+
+        // 한글
+        const korean = (text.match(/[가-힣ㄱ-ㅎㅏ-ㅣ]/g) || []).length;
+
+        // 영문
+        const english = (text.match(/[a-zA-Z]/g) || []).length;
+
+        // 숫자
+        const numbers = (text.match(/[0-9]/g) || []).length;
+
+        // 특수문자 (공백, 한글, 영문, 숫자 제외)
+        const special = (text.match(/[^\s가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9]/g) || []).length;
+
+        // EUC-KR 바이트 추정 (한글 2바이트, 영문/숫자 1바이트)
+        const eucKr = korean * 2 + (charNoSpace - korean);
+
+        // DOM 업데이트
+        animateValue('charWithSpace', charWithSpace);
+        animateValue('charNoSpace', charNoSpace);
+        animateValue('wordCount', words);
+        animateValue('byteCount', bytes);
+        document.getElementById('lineCount').textContent = numberFormat(lines);
+        document.getElementById('sentenceCount').textContent = numberFormat(sentences);
+        document.getElementById('koreanCount').textContent = numberFormat(korean);
+        document.getElementById('englishCount').textContent = numberFormat(english);
+        document.getElementById('numberCount').textContent = numberFormat(numbers);
+        document.getElementById('specialCount').textContent = numberFormat(special);
+        document.getElementById('eucKrByte').textContent = numberFormat(eucKr);
+
+        updateLimit();
+    }
+
+    function updateLimit() {
+        const text = textInput.value;
+        const limit = parseInt(limitInput.value) || 1;
+        const type = limitType.value;
+
+        let current = 0;
+        if (type === 'withSpace') current = text.length;
+        else if (type === 'noSpace') current = text.replace(/\s/g, '').length;
+        else current = new Blob([text]).size;
+
+        const percent = Math.min((current / limit) * 100, 100);
+        const bar = document.getElementById('limitBar');
+        const limitText = document.getElementById('limitText');
+
+        bar.style.width = percent + '%';
+        bar.className = 'limit-bar';
+        if (percent >= 100) bar.classList.add('danger');
+        else if (percent >= 80) bar.classList.add('warning');
+
+        limitText.textContent = numberFormat(current) + ' / ' + numberFormat(limit);
+        limitText.className = 'limit-text';
+        if (current > limit) {
+            limitText.textContent += '  (초과 ' + numberFormat(current - limit) + ')';
+            limitText.classList.add('danger');
+        }
+    }
+
+    function animateValue(id, newVal) {
+        document.getElementById(id).textContent = numberFormat(newVal);
+    }
+
+    function numberFormat(n) {
+        return n.toLocaleString('ko-KR');
+    }
+
+    // 버튼 기능
+    async function pasteText() {
+        try {
+            const clip = await navigator.clipboard.readText();
+            textInput.value += clip;
+            textInput.focus();
+            calculate();
+            showToast('붙여넣기 완료');
+        } catch {
+            showToast('클립보드 접근 권한이 필요합니다');
+        }
+    }
+
+    function copyText() {
+        if (!textInput.value) {
+            showToast('복사할 텍스트가 없습니다');
+            return;
+        }
+        navigator.clipboard.writeText(textInput.value).then(() => {
+            showToast('텍스트가 복사되었습니다');
+        }).catch(() => {
+            showToast('복사에 실패했습니다');
+        });
+    }
+
+    function clearText() {
+        textInput.value = '';
+        textInput.focus();
+        calculate();
+        showToast('텍스트가 지워졌습니다');
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // 초기 실행
+    calculate();
+</script>
+
+</body>
+</html>
